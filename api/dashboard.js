@@ -1,9 +1,14 @@
-const { data, error } = await supabase.from("leads").select("*");
-const hoje = data.filter(l => new Date(l.created_at).toDateString() === new Date().toDateString()).length;
-const semana = data.filter(l => {
-  const d = new Date(l.created_at);
-  const diff = (new Date() - d) / (1000*60*60*24);
-  return diff <= 7;
-}).length;
+import { createClient } from "@supabase/supabase-js";
 
-return res.status(200).json({ leadsHoje: hoje, leadsSemana: semana });
+const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
+
+export default async function handler(req, res) {
+  try {
+    const { data, error } = await supabase.from("leads").select("*");
+    if (error) return res.status(500).json({ message: error.message });
+
+    return res.status(200).json({ leads: data });
+  } catch (err) {
+    return res.status(500).json({ message: err.message });
+  }
+}
